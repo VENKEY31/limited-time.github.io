@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spin & Win Amazing Prizes!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 8px solid #333;
+            box-shadow: 0 0 0 8px #333, 0 0 30px rgba(0, 0, 0, 0.5);
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.21, 0.99);
+            transform: rotate(0deg);
+        }
+        
+        .wheel-item {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding-left: 20px;
+            box-sizing: border-box;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .wheel-pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #ff5722;
+            z-index: 10;
+            filter: drop-shadow(0 0 5px rgba(0,0,0,0.3));
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            overflow: hidden;
+            animation: modalFadeIn 0.3s;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .share-btn {
+            transition: all 0.3s;
+        }
+        
+        .share-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .spin-btn {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .winner-item {
+            animation: slideIn 0.5s forwards;
+            opacity: 0;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .prize-image {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+        
+        .spin-result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .spin-result-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 300px;
+            overflow: hidden;
+            animation: modalFadeIn 0.3s;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .bounce {
+            animation: bounce 0.5s;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+        
+        .gift-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        
+        .rotating {
+            animation: rotating 4s linear infinite;
+        }
+        
+        @keyframes rotating {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .pulse {
+            animation: pulse-animation 2s infinite;
+        }
+        
+        @keyframes pulse-animation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+
+        .wheel-section-image {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            transform: rotate(30deg);
+        }
+    </style>
+</head>
+<body class="py-8">
+    <div class="container mx-auto px-4 max-w-3xl">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-indigo-800 mb-2">Spin the Wheel & Win Amazing Prizes! 🎁</h1>
+            <p class="text-lg text-gray-700 mb-4">You have <span class="font-bold text-red-500">1 FREE SPIN</span> to win exciting prizes!</p>
+            
+            <div class="flex justify-center space-x-4 mb-6">
+                <div class="bg-white rounded-lg shadow-md px-4 py-2 flex items-center">
+                    <i class="fas fa-trophy text-yellow-500 mr-2"></i>
+                    <span class="font-medium">70% Win Rate</span>
+                </div>
+                <div class="bg-white rounded-lg shadow-md px-4 py-2 flex items-center">
+                    <i class="fas fa-shield-alt text-green-500 mr-2"></i>
+                    <span class="font-medium">Legit & Secure</span>
+                </div>
+            </div>
+            
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6 text-left">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-yellow-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            <span class="font-bold">Note:</span> Share with 10 friends after winning to claim your prize!
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-blue-50 p-3 rounded-lg mb-6">
+                <p class="text-blue-800 font-medium"><i class="fas fa-bolt text-yellow-500 mr-2"></i> New winners every minute!</p>
+            </div>
+        </header>
+        
+        <!-- Wheel Section -->
+        <section class="mb-10">
+            <div class="wheel-container">
+                <div class="wheel" id="wheel"></div>
+                <div class="wheel-pointer"></div>
+            </div>
+            
+            <div class="text-center mt-6">
+                <p class="text-gray-600 mb-4">Spins remaining: <span id="spins-left" class="font-bold">1</span></p>
+                <button id="spin-btn" class="spin-btn bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300">
+                    SPIN NOW! <i class="fas fa-sync-alt ml-2"></i>
+                </button>
+            </div>
+        </section>
+        
+        <!-- Live Winners -->
+        <section class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-bolt text-yellow-500 mr-2"></i> Live Winners
+            </h2>
+            <div class="space-y-3" id="winners-list">
+                <div class="winner-item flex items-center">
+                    <div class="bg-green-100 rounded-full p-2 mr-3">
+                        <i class="fas fa-trophy text-green-500"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium">John from NY won <span class="text-purple-600">$100 Gift Card</span> 5 mins ago!</p>
+                    </div>
+                </div>
+                <div class="winner-item flex items-center" style="animation-delay: 0.1s">
+                    <div class="bg-green-100 rounded-full p-2 mr-3">
+                        <i class="fas fa-trophy text-green-500"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium">Sarah from CA won <span class="text-blue-600">Smart Watch</span> 12 mins ago!</p>
+                    </div>
+                </div>
+                <div class="winner-item flex items-center" style="animation-delay: 0.2s">
+                    <div class="bg-green-100 rounded-full p-2 mr-3">
+                        <i class="fas fa-trophy text-green-500"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium">Mike from TX won <span class="text-pink-600">Wireless Earbuds</span> 18 mins ago!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- How It Works -->
+        <section class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-question-circle text-blue-500 mr-2"></i> How It Works
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg text-center">
+                    <div class="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-sync-alt text-blue-500 text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-blue-800 mb-1">1. Spin the Wheel</h3>
+                    <p class="text-sm text-gray-600">Use your free spin to win amazing prizes</p>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg text-center">
+                    <div class="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-share-alt text-purple-500 text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-purple-800 mb-1">2. Share with Friends</h3>
+                    <p class="text-sm text-gray-600">Share with 10 friends to unlock your prize</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg text-center">
+                    <div class="bg-green-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-gift text-green-500 text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-green-800 mb-1">3. Claim Your Prize</h3>
+                    <p class="text-sm text-gray-600">We'll contact you within 3-4 working days</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Spin Result Modal -->
+    <div id="spin-result-modal" class="spin-result-modal">
+        <div class="spin-result-content">
+            <div id="spin-result-icon" class="mx-auto mb-4 text-4xl">
+                <i class="fas fa-spinner text-blue-500 rotating"></i>
+            </div>
+            <h3 id="spin-result-title" class="text-xl font-bold mb-2">Spinning...</h3>
+            <p id="spin-result-message" class="text-gray-600 mb-4">Please wait while we determine your prize</p>
+            <button id="spin-result-ok-btn" class="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300">
+                OK
+            </button>
+        </div>
+    </div>
+    
+    <!-- Prize Modal -->
+    <div id="prize-modal" class="modal">
+        <div class="modal-content">
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-white">
+                <h3 class="text-xl font-bold text-center">Congratulations! 🎉</h3>
+            </div>
+            <div class="p-6 text-center">
+                <div id="prize-animation" class="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4 gift-animation">
+                    <i class="fas fa-gift text-yellow-500 text-3xl"></i>
+                </div>
+                <p class="text-lg font-medium mb-2">You won:</p>
+                <h4 id="prize-name" class="text-2xl font-bold text-purple-600 mb-4">$100 Gift Card</h4>
+                <p class="text-gray-600 mb-4">Share this page with 10 friends to claim your prize</p>
+                
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <button id="whatsapp-share" class="share-btn bg-green-500 text-white py-3 px-4 rounded-lg flex items-center justify-center">
+                        <i class="fab fa-whatsapp mr-2 text-xl"></i> WhatsApp
+                    </button>
+                    <button id="facebook-share" class="share-btn bg-blue-600 text-white py-3 px-4 rounded-lg flex items-center justify-center">
+                        <i class="fab fa-facebook mr-2 text-xl"></i> Facebook
+                    </button>
+                    <button id="twitter-share" class="share-btn bg-blue-400 text-white py-3 px-4 rounded-lg flex items-center justify-center">
+                        <i class="fab fa-twitter mr-2 text-xl"></i> Twitter
+                    </button>
+                    <button id="copy-share" class="share-btn bg-gray-600 text-white py-3 px-4 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-copy mr-2 text-xl"></i> Copy Link
+                    </button>
+                </div>
+                
+                <div class="progress-bar mb-4">
+                    <div id="share-progress" class="progress" style="width: 0%"></div>
+                </div>
+                <p class="text-center text-sm text-gray-500 mb-4"><span id="shares-count">0</span>/10 Shares Completed</p>
+                
+                <div class="mb-4">
+                    <input type="email" id="user-email" placeholder="Your Email (We'll notify you)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <button id="claim-btn" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-3 px-4 rounded-lg shadow hover:shadow-md transition duration-300">
+                    Submit & Claim Prize <i class="fas fa-gift ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <div class="bg-gradient-to-r from-green-500 to-green-400 p-4 text-white">
+                <h3 class="text-xl font-bold text-center">Congratulations! 🎊</h3>
+            </div>
+            <div class="p-6 text-center">
+                <div class="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check-circle text-green-500 text-3xl"></i>
+                </div>
+                <h4 class="text-xl font-bold text-green-600 mb-2">Your prize is being processed!</h4>
+                <p class="text-gray-600 mb-4">We'll contact you via email in <span class="font-bold">3-4 working days</span>.</p>
+                <p class="text-sm text-gray-500 mb-4">Thank you for sharing with your friends!</p>
+                
+                <button id="close-modal-btn" class="bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600 transition duration-300">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confetti Container -->
+    <div id="confetti-container"></div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Link copied to clipboard!</div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wheel setup
+            const wheel = document.getElementById('wheel');
+            const spinBtn = document.getElementById('spin-btn');
+            const spinsLeftEl = document.getElementById('spins-left');
+            const prizeModal = document.getElementById('prize-modal');
+            const successModal = document.getElementById('success-modal');
+            const spinResultModal = document.getElementById('spin-result-modal');
+            const spinResultTitle = document.getElementById('spin-result-title');
+            const spinResultMessage = document.getElementById('spin-result-message');
+            const spinResultIcon = document.getElementById('spin-result-icon');
+            const spinResultOkBtn = document.getElementById('spin-result-ok-btn');
+            const prizeNameEl = document.getElementById('prize-name');
+            const userEmail = document.getElementById('user-email');
+            const claimBtn = document.getElementById('claim-btn');
+            const copyShareBtn = document.getElementById('copy-share');
+            const sharesCount = document.getElementById('shares-count');
+            const shareProgress = document.getElementById('share-progress');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const confettiContainer = document.getElementById('confetti-container');
+            const prizeAnimation = document.getElementById('prize-animation');
+            const toast = document.getElementById('toast');
+            
+            // Share buttons
+            const whatsappShare = document.getElementById('whatsapp-share');
+            const facebookShare = document.getElementById('facebook-share');
+            const twitterShare = document.getElementById('twitter-share');
+            
+            let spinsLeft = 1;
+            let isSpinning = false;
+            let currentPrize = '';
+            let hasWon = false;
+            let sharesCompleted = 0;
+            
+            // Prizes configuration with images only (no text)
+            const prizes = [
+                { 
+                    name: "$100 Gift Card", 
+                    color: "#FF6384", 
+                    image: "https://cdn-icons-png.flaticon.com/512/217/217853.png",
+                    animation: "pulse"
+                },
+                { 
+                    name: "Smart Watch", 
+                    color: "#36A2EB", 
+                    image: "https://cdn-icons-png.flaticon.com/512/599/599560.png",
+                    animation: "floating"
+                },
+                { 
+                    name: "Wireless Earbuds", 
+                    color: "#FFCE56", 
+                    image: "https://cdn-icons-png.flaticon.com/512/2942/2942035.png",
+                    animation: "bounce"
+                },
+                { 
+                    name: "Discount Coupon", 
+                    color: "#4BC0C0", 
+                    image: "https://cdn-icons-png.flaticon.com/512/1069/1069101.png",
+                    animation: "pulse"
+                },
+                { 
+                    name: "Try Again", 
+                    color: "#FF9F40", 
+                    image: "https://cdn-icons-png.flaticon.com/512/189/189665.png",
+                    animation: "rotating"
+                },
+                { 
+                    name: "Free Subscription", 
+                    color: "#9966FF", 
+                    image: "https://cdn-icons-png.flaticon.com/512/2889/2889676.png",
+                    animation: "floating"
+                }
+            ];
+            
+            // Create wheel segments with images only
+            function createWheel() {
+                const segmentAngle = 360 / prizes.length;
+                
+                prizes.forEach((prize, index) => {
+                    const segment = document.createElement('div');
+                    segment.className = 'wheel-item';
+                    segment.style.transform = `rotate(${segmentAngle * index}deg)`;
+                    segment.style.background = prize.color;
+                    segment.innerHTML = `
+                        <div style="transform: rotate(${segmentAngle / 2}deg); width: 100%;">
+                            <img src="${prize.image}" class="wheel-section-image ${prize.animation}">
+                        </div>
+                    `;
+                    wheel.appendChild(segment);
+                });
+            }
+            
+            // Show spin result modal
+            function showSpinResult(title, message, iconClass, isSuccess = false) {
+                spinResultTitle.textContent = title;
+                spinResultMessage.textContent = message;
+                spinResultIcon.innerHTML = `<i class="fas ${iconClass} ${isSuccess ? 'text-green-500' : 'text-blue-500'} ${isSuccess ? 'pulse' : 'rotating'}"></i>`;
+                spinResultModal.style.display = 'flex';
+                
+                if (isSuccess) {
+                    spinResultIcon.classList.add('bounce');
+                    setTimeout(() => {
+                        spinResultIcon.classList.remove('bounce');
+                    }, 1000);
+                }
+            }
+            
+            // Spin the wheel with 70% win chance
+            function spinWheel() {
+                if (isSpinning || spinsLeft <= 0) return;
+                
+                isSpinning = true;
+                spinsLeft--;
+                spinsLeftEl.textContent = spinsLeft;
+                spinBtn.disabled = true;
+                
+                // Show spinning modal
+                showSpinResult("Spinning...", "Please wait while we determine your prize", "fa-spinner");
+                
+                // Random prize selection with 70% win chance
+                const shouldWin = Math.random() < 0.7; // 70% chance to win
+                
+                let selectedPrize;
+                if (shouldWin) {
+                    // Select from winning prizes (exclude "Try Again")
+                    const winningPrizes = prizes.filter(prize => prize.name !== "Try Again");
+                    selectedPrize = winningPrizes[Math.floor(Math.random() * winningPrizes.length)];
+                } else {
+                    // Try Again (30% chance)
+                    selectedPrize = prizes.find(prize => prize.name === "Try Again");
+                }
+                
+                currentPrize = selectedPrize.name;
+                
+                // Calculate spin rotation (3 full rotations + segment angle)
+                const segmentAngle = 360 / prizes.length;
+                const prizeIndex = prizes.findIndex(p => p.name === selectedPrize.name);
+                const spinAngle = 1080 + (360 - (segmentAngle * prizeIndex + segmentAngle / 2));
+                
+                wheel.style.transform = `rotate(${spinAngle}deg)`;
+                
+                // After spin completes
+                setTimeout(() => {
+                    isSpinning = false;
+                    
+                    if (selectedPrize.name === "Try Again") {
+                        // Show try again result
+                        showSpinResult("Try Again", "Better luck next time!", "fa-redo");
+                        spinBtn.disabled = false;
+                        if (spinsLeft <= 0) {
+                            showFinalPopup();
+                        }
+                    } else {
+                        hasWon = true;
+                        createConfetti();
+                        setTimeout(() => {
+                            // Show win result
+                            showSpinResult("Congratulations!", `You won: ${selectedPrize.name}`, "fa-trophy", true);
+                        }, 1000);
+                    }
+                }, 4000);
+            }
+            
+            // Show final popup after spin
+            function showFinalPopup() {
+                spinBtn.textContent = "SPIN USED UP";
+                spinBtn.classList.remove('spin-btn');
+                spinBtn.classList.remove('bg-gradient-to-r', 'from-purple-600', 'to-indigo-600');
+                spinBtn.classList.add('bg-gray-400');
+            }
+            
+            // Create confetti effect
+            function createConfetti() {
+                confettiContainer.innerHTML = '';
+                
+                for (let i = 0; i < 100; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    
+                    confettiContainer.appendChild(confetti);
+                    
+                    // Animate confetti
+                    setTimeout(() => {
+                        confetti.style.opacity = '1';
+                        confetti.style.transform = `translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 + 100}px) rotate(${Math.random() * 360}deg)`;
+                        confetti.style.transition = `all ${Math.random() * 3 + 2}s ease-out`;
+                        
+                        setTimeout(() => {
+                            confetti.style.opacity = '0';
+                        }, 2000);
+                    }, i * 20);
+                }
+            }
+            
+            // Add fake winners periodically
+            function addFakeWinners() {
+                const winners = [
+                    { name: "Emily", location: "FL", prize: "$100 Gift Card" },
+                    { name: "David", location: "TX", prize: "Smart Watch" },
+                    { name: "Jessica", location: "CA", prize: "Wireless Earbuds" },
+                    { name: "Michael", location: "IL", prize: "Free Subscription" }
+                ];
+                
+                setInterval(() => {
+                    const randomWinner = winners[Math.floor(Math.random() * winners.length)];
+                    const timeAgo = Math.floor(Math.random() * 20) + 1;
+                    
+                    const winnerItem = document.createElement('div');
+                    winnerItem.className = 'winner-item flex items-center';
+                    winnerItem.style.animationDelay = '0s';
+                    winnerItem.innerHTML = `
+                        <div class="bg-green-100 rounded-full p-2 mr-3">
+                            <i class="fas fa-trophy text-green-500"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">${randomWinner.name} from ${randomWinner.location} won <span class="${getPrizeColor(randomWinner.prize)}">${randomWinner.prize}</span> ${timeAgo} mins ago!</p>
+                        </div>
+                    `;
+                    
+                    const winnersList = document.getElementById('winners-list');
+                    winnersList.insertBefore(winnerItem, winnersList.firstChild);
+                    
+                    if (winnersList.children.length > 3) {
+                        winnersList.removeChild(winnersList.lastChild);
+                    }
+                }, 15000);
+            }
+            
+            function getPrizeColor(prize) {
+                if (prize.includes('Gift Card')) return 'text-purple-600';
+                if (prize.includes('Watch')) return 'text-blue-600';
+                if (prize.includes('Earbuds')) return 'text-pink-600';
+                if (prize.includes('Subscription')) return 'text-indigo-600';
+                return 'text-green-600';
+            }
+            
+            // Share functions
+            function shareOnWhatsApp() {
+                const currentUrl = window.location.href;
+                const text = `I just won ${currentPrize} on Spin & Win! Try your luck too: ${currentUrl}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                updateShareProgress();
+            }
+            
+            function shareOnFacebook() {
+                const currentUrl = window.location.href;
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`, '_blank');
+                updateShareProgress();
+            }
+            
+            function shareOnTwitter() {
+                const currentUrl = window.location.href;
+                const text = `I won ${currentPrize} on Spin & Win! Try your luck: ${currentUrl}`;
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+                updateShareProgress();
+            }
+            
+            function copyShareLink() {
+                const currentUrl = window.location.href;
+                navigator.clipboard.writeText(currentUrl).then(() => {
+                    showToast('Link copied to clipboard!');
+                    updateShareProgress();
+                });
+            }
+            
+            function showToast(message) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+            
+            function updateShareProgress() {
+                sharesCompleted += 1;
+                if (sharesCompleted > 10) sharesCompleted = 10;
+                
+                sharesCount.textContent = sharesCompleted;
+                shareProgress.style.width = `${(sharesCompleted / 10) * 100}%`;
+                
+                if (sharesCompleted >= 10) {
+                    setTimeout(() => {
+                        prizeModal.style.display = 'none';
+                        successModal.style.display = 'flex';
+                    }, 1000);
+                }
+            }
+            
+            // Update prize animation based on prize won
+            function updatePrizeAnimation(prizeName) {
+                const prize = prizes.find(p => p.name === prizeName);
+                if (prize) {
+                    prizeAnimation.innerHTML = `<img src="${prize.image}" class="w-16 h-16 ${prize.animation}">`;
+                } else {
+                    prizeAnimation.innerHTML = `<i class="fas fa-gift text-yellow-500 text-3xl"></i>`;
+                }
+            }
+            
+            // Event listeners
+            spinBtn.addEventListener('click', spinWheel);
+            
+            spinResultOkBtn.addEventListener('click', function() {
+                spinResultModal.style.display = 'none';
+                
+                if (hasWon) {
+                    prizeNameEl.textContent = currentPrize;
+                    updatePrizeAnimation(currentPrize);
+                    prizeModal.style.display = 'flex';
+                } else {
+                    spinBtn.disabled = false;
+                    if (spinsLeft <= 0) {
+                        showFinalPopup();
+                    }
+                }
+            });
+            
+            claimBtn.addEventListener('click', function() {
+                if (userEmail.value && userEmail.value.includes('@')) {
+                    showToast('Thank you! We will contact you soon.');
+                } else {
+                    showToast('Please enter a valid email address');
+                }
+            });
+            
+            copyShareBtn.addEventListener('click', copyShareLink);
+            whatsappShare.addEventListener('click', shareOnWhatsApp);
+            facebookShare.addEventListener('click', shareOnFacebook);
+            twitterShare.addEventListener('click', shareOnTwitter);
+            
+            closeModalBtn.addEventListener('click', function() {
+                successModal.style.display = 'none';
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === prizeModal) {
+                    prizeModal.style.display = 'none';
+                }
+                if (event.target === successModal) {
+                    successModal.style.display = 'none';
+                }
+                if (event.target === spinResultModal) {
+                    spinResultModal.style.display = 'none';
+                }
+            });
+            
+            // Initialize
+            createWheel();
+            addFakeWinners();
+        });
+    </script>
+</body>
+</html>
